@@ -9,11 +9,11 @@ module Text.Digestive.Ref
 
 
 --------------------------------------------------------------------------------
-import qualified Data.ByteString    as B
 import           Data.Text          (Text)
 import qualified Data.Text          as T
 import qualified Data.Text.Encoding as T
 import           Text.Printf        (printf)
+-------------------------------------------------------------------------------
 
 
 --------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ import           Text.Printf        (printf)
 makeRef :: Text -> Text
 makeRef =
     -- We simply UTF-8 encode and then hex encode, so all characters are valid.
-    T.append "df-" . T.pack . (printf "%02x" =<<) . B.unpack . T.encodeUtf8
+    T.append "df-" . T.pack . (printf "%02x" =<<) . T.unpack
 
 
 --------------------------------------------------------------------------------

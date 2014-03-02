@@ -1,0 +1,23 @@
+Name:          digestive-functors-simpleblaze
+Version:       0.6.0.3
+Synopsis:      Blaze frontend for the digestive-functors library
+Description:   Blaze frontend for the digestive-functors library
+Homepage:      http://github.com/jaspervdj/digestive-functors
+License:       BSD3
+License-file:  LICENSE
+Author:        Jasper Van der Jeugt <m@jaspervdj.be>
+Maintainer:    Jasper Van der Jeugt <m@jaspervdj.be>
+Category:      Web
+Build-type:    Simple
+Cabal-version: >= 1.6
+
+Library
+  Hs-source-dirs:  src
+  GHC-options:     -Wall -fwarn-tabs
+  Exposed-modules: Text.Digestive.SimpleBlaze
+
+  Build-depends:
+    base                     >= 4    && < 5,
+    blaze-markup-haste       >= 0.5  && < 0.7,
+    digestive-functors-haste >= 0.6  && < 0.8,
+    string-compat            >= 0.1  && < 0.2

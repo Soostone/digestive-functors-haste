@@ -2,3 +2,7 @@
 *.o
 *.swp
 dist
+*.js
+TAGS
+*.jsmod
+*DS*
