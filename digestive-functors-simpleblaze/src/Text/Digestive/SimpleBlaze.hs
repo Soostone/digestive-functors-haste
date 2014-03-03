@@ -15,6 +15,7 @@ module Text.Digestive.SimpleBlaze
     , mkForm
     , errorList
     , childErrorList
+    , Html
     ) where
 
 
