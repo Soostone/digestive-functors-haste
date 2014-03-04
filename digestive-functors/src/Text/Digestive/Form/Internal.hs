@@ -95,6 +95,9 @@ data FormTree t v m a where
     Metadata :: [Metadata] -> FormTree t v m a -> FormTree t v m a
 
 
+    Markup   :: (Path -> v -> v) -> FormTree t v m a -> FormTree t v m a
+
+
 --------------------------------------------------------------------------------
 instance Monad m => Functor (FormTree t v m) where
     fmap = transform . (return .) . (return .)
@@ -150,6 +153,7 @@ showForm form = case form of
         , map indent (showForm is)
         ]
     (Metadata m x) -> ("Metadata " ++ show m) : map indent (showForm x)
+    (Markup _ x) -> ("Markup _ ") : map indent (showForm x)
   where
     indent = ("  " ++)
 
@@ -178,6 +182,7 @@ toFormTree (Map f x)      = liftM (Map f) (toFormTree x)
 toFormTree (Monadic x)    = x >>= toFormTree >>= return . Monadic . Identity
 toFormTree (List d is)    = liftM2 List (mapM toFormTree d) (toFormTree is)
 toFormTree (Metadata m x) = liftM (Metadata m) (toFormTree x)
+toFormTree (Markup m x)   = liftM (Markup m) (toFormTree x)
 
 
 --------------------------------------------------------------------------------
@@ -191,6 +196,7 @@ children (Map _ x)      = children x
 children (Monadic x)    = children $ runIdentity x
 children (List _ is)    = [SomeForm is]
 children (Metadata _ x) = children x
+children (Markup _ x)   = children x
 
 
 --------------------------------------------------------------------------------
@@ -216,6 +222,7 @@ popRef form = case form of
     (Monadic x)    -> popRef $ runIdentity x
     (List _ _)     -> (Nothing, form)
     (Metadata m x) -> let (r, form') = popRef x in (r, Metadata m form')
+    (Markup m x)   -> let (r, form') = popRef x in (r, Markup m form')
 
 
 --------------------------------------------------------------------------------
@@ -233,6 +240,7 @@ getMetadata (Map _ x)      = getMetadata x
 getMetadata (Monadic x)    = getMetadata $ runIdentity x
 getMetadata (List _ _)     = []
 getMetadata (Metadata m x) = m ++ getMetadata x
+getMetadata (Markup m x) = getMetadata x
 
 
 --------------------------------------------------------------------------------
@@ -283,6 +291,7 @@ lookupList path form = case candidates of
     getList (Monadic x)    = getList $ runIdentity x
     getList (List d is)    = [SomeForm (List d is)]
     getList (Metadata _ x) = getList x
+    getList (Markup _ x)   = getList x
 
 
 --------------------------------------------------------------------------------
@@ -295,6 +304,7 @@ toField (Map _ x)      = toField x
 toField (Monadic x)    = toField (runIdentity x)
 toField (List _ _)     = Nothing
 toField (Metadata _ x) = toField x
+toField (Markup _ x)   = toField x
 
 
 --------------------------------------------------------------------------------
@@ -366,6 +376,7 @@ eval' path method env form = case form of
                 return (sequenceA results, inp1 ++ concat inps)
 
     Metadata _ x -> eval' path method env x
+    Markup   _ x -> eval' path method env x
 
 
 --------------------------------------------------------------------------------
@@ -380,7 +391,7 @@ formMapView f (Map g x)      = Map (g >=> return . resultMapError f) (formMapVie
 formMapView f (Monadic x)    = formMapView f $ runIdentity x
 formMapView f (List d is)    = List (fmap (formMapView f) d) (formMapView f is)
 formMapView f (Metadata m x) = Metadata m $ formMapView f x
-
+formMapView f (Markup m x)   = Markup (const id) $ formMapView f x
 
 --------------------------------------------------------------------------------
 -- | Utility: bind for 'Result' inside another monad
@@ -407,3 +418,4 @@ debugFormPaths (List d is)    =
     (map ("0" :) $ debugFormPaths $ d `defaultListIndex` 0)
 debugFormPaths (Ref r x)      = map (r :) $ debugFormPaths x
 debugFormPaths (Metadata _ x) = debugFormPaths x
+debugFormPaths (Markup _ x) = debugFormPaths x
